@@ -36,57 +36,55 @@ export default function CirclesOnboarding() {
   const [newCircle, setNewCircle] = useState("");
   const [mappedRelations, setTrustRelations] = useState([]);
   const navigate = useNavigate();
-  
 
+  // Initialize the provider using the user's Ethereum wallet
+const provider = new ethers.BrowserProvider(window.ethereum);
 
-  const provider = new ethers.BrowserProvider(window.ethereum);
+let walletAddress = null;
+let sdkInitialized = false;
+let sdk = null;
+let signer = null;
 
-  let signer = null;
-  let walletAddress = null;
-  let sdkInitialized = false;
-  let sdk = null;
-
-  async function getRunner() {
-    const browserProvider = new BrowserProvider(window.ethereum)
-    const signer = await browserProvider.getSigner();
-    const address = await signer.getAddress();
-    
-    return {
-        runner: signer,
-        address: address
-    };
-  }
-
-  async function initializeSdk() {
-    const runner = await getRunner();
-    sdk = new Sdk(chainConfig, runner);
-    sdkInitialized = true;
-    return sdk;
-  }
-
-
-  const connectWallet = async () => {
-    try {
-      await window.ethereum.request({ method: "eth_requestAccounts" });
-
-      signer = await provider.getSigner();
-      walletAddress = await signer.getAddress();
-
-      if (!sdkInitialized) {
-        sdk = await initializeSdk(signer);
-        console.log("SDK after initialization:", sdk);
-      }
-      const balance = await provider.getBalance(walletAddress);
-      setUserBalance(ethers.formatEther(balance));
-      setUserAddress(walletAddress);
-      setIsConnected(true);
-      setIsLoggedIn(true);
-
-      await handleAvatarCheckAndRegister();
-    } catch (error) {
-      console.error("Error connecting wallet:", error);
+// Function to initialize the SDK with the provided chainConfig and signer
+async function initializeSdk() {
+    if (!sdkInitialized) {
+        sdk = new Sdk(chainConfig, signer);
+        sdkInitialized = true;
+        console.log("SDK initialized:", sdk);
     }
-  };
+    return sdk;
+}
+
+// Function to handle wallet connection and SDK initialization
+const connectWallet = async () => {
+    try {
+        // Request the user to connect their Ethereum wallet
+        await window.ethereum.request({ method: "eth_requestAccounts" });
+
+        // Get the signer and wallet address from the provider
+        signer = await provider.getSigner();
+        walletAddress = await signer.getAddress();
+
+        // Initialize the SDK
+        await initializeSdk();
+
+        // Fetch and display the user's balance
+        const balance = await provider.getBalance(walletAddress);
+        setUserBalance(ethers.formatEther(balance));
+
+        // Update the UI with the wallet address and connection status
+        setUserAddress(walletAddress);
+        setIsConnected(true);
+        setIsLoggedIn(true);
+
+        // Optional: Handle any additional logic, such as avatar checks
+        await handleAvatarCheckAndRegister();
+
+    } catch (error) {
+        console.error("Error connecting wallet:", error);
+    }
+};
+  
 
   const disconnectWallet = () => {
     setIsConnected(false);
