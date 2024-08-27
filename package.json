@@ -10,8 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@circles-sdk/data": "^0.4.0",
-    "@circles-sdk/sdk": "^0.4.0",
+    "@circles-sdk/data": "^0.7.0-preview-1",
+    "@circles-sdk/profiles": "^0.7.0-preview-1",
+    "@circles-sdk/sdk": "^0.7.0-preview-1",
     "@radix-ui/react-label": "^2.1.0",
     "@radix-ui/react-scroll-area": "^1.1.0",
     "@radix-ui/react-slot": "^1.1.0",
@@ -25,7 +26,6 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.24.1",
-    "react-toastify": "^10.0.5",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7"
   },
