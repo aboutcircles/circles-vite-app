@@ -8,6 +8,7 @@ import { ScrollArea } from "./components/ui/scroll-area";
 import { BrowserProvider, ethers } from "ethers";
 import {Sdk} from "@circles-sdk/sdk";
 import Dashboard from "./dashboard";
+import { ToastContainer, toast } from 'react-toastify';
 
 const chainConfig = {
   circlesRpcUrl: 'https://rpc.helsinki.aboutcircles.com',
@@ -147,16 +148,39 @@ export default function CirclesOnboarding() {
       if (!avatarInfo) {
         throw new Error("Avatar not found");
       }
+  
       await avatarInfo.personalMint();
-
+  
       // Update total balance after minting
       const totalBalance = await avatarInfo.getTotalBalance(walletAddress);
       setTotalBalance(totalBalance);
+  
+      return { success: true, message: "Personal minting successful" };
     } catch (error) {
-      console.error("Error minting Circles:", error);
+      throw new Error(`Error minting Circles: ${error.message}`);
     }
   };
 
+  
+
+const handleMintTokens = async () => {
+  try {
+    const response = await toast.promise(
+      personalMint(),
+      {
+        pending: 'Minting tokens...', // Message shown while minting is in progress
+        success: ({ data }) => data.message, // Message shown on success
+        error: ({ data }) => `Error: ${data.message}`, // Message shown on error
+      }
+    );
+
+    console.log(response); // Logs the response object on success
+  } catch (error) {
+    console.error("Error in minting tokens:", error);
+  }
+};
+
+  
   async function updateBalance()
   {
     const totalBalance = await avatarInfo.getTotalBalance(walletAddress);
@@ -382,6 +406,7 @@ export default function CirclesOnboarding() {
                         </>
                     )}
                 </main>
+                <ToastContainer/>
             </div>
       </div>             
   );
