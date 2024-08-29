@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "./components/ui/scroll-area";
 import { BrowserProvider, ethers } from "ethers";
+
 import {Sdk} from "@circles-sdk/sdk";
 import Dashboard from "./dashboard";
 
@@ -159,24 +160,7 @@ const connectWallet = async () => {
     }
   };
 
-  
-// Remove toast container
-// const handleMintTokens = async () => {
-//   try {
-//     const response = await toast.promise(
-//       personalMint(),
-//       {
-//         pending: 'Minting tokens...', // Message shown while minting is in progress
-//         success: ({ data }) => data.message, // Message shown on success
-//         error: ({ data }) => `Error: ${data.message}`, // Message shown on error
-//       }
-//     );
 
-//     console.log(response); // Logs the response object on success
-//   } catch (error) {
-//     console.error("Error in minting tokens:", error);
-//   }
-// };
 
   
   async function updateBalance()
@@ -216,18 +200,6 @@ const connectWallet = async () => {
   };
   
 
-  // const setMax = async () => {
-  //   try {
-  //     if (!avatarInfo) {
-  //       throw new Error("Avatar not found");
-  //     }
-
-  //     const maxAmount = await maxTransferableAmount ?? BigInt(0);
-  //     setValueString(crcToTc(new Date(), maxAmount).toFixed(2));
-  //   } catch (error) {
-  //     console.error("Error setting max transferable amount:", error);
-  //   }
-  // };
 
 
 
@@ -274,8 +246,6 @@ const connectWallet = async () => {
     }
   };
   
-
-
 
 
   return (
