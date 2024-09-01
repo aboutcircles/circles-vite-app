@@ -1,12 +1,9 @@
 {
-    "compilerOptions": {
-      // ...
-      "baseUrl": ".",
-      "paths": {
-        "@/*": [
-          "./src/*"
-        ]
-      }
-      // ...
+  "compilerOptions": {
+    "baseUrl": ".",  // Sets the base directory for resolving non-relative module names
+    "paths": {
+      "@/*": ["./src/*"]  // Allows importing with '@/' as a shorthand for './src/'
     }
-  }
+  },
+  "include": ["src/**/*"]  // Include all files in the 'src' directory
+}

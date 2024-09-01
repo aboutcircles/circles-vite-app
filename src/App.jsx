@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Dashboard from './dashboard';
 import CirclesOnboarding from './circlesonboarding';
-import { CirclesSDKProvider } from './contexts/CirclesSDK';
+import { CirclesSDK } from './contexts/CirclesSDK';
+
 
 export default function App() {
   const [trustRelations, setTrustRelations] = useState([]);
 
   return (
-    <CirclesSDKProvider>  
+    <CirclesSDK>
       <Router>
         <Routes>
           {/* Route for Circles Onboarding */}
@@ -24,6 +25,6 @@ export default function App() {
           />
         </Routes>
       </Router>
-    </CirclesSDKProvider>
+    </CirclesSDK>
   );
 }

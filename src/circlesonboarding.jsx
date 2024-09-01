@@ -1,31 +1,18 @@
 "use client"
-import { useState, useEffect } from "react";
+import React,{ useState, useEffect, useContext } from "react";
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "./components/ui/scroll-area";
-import { BrowserProvider, ethers } from "ethers";
+import CirclesSDKContext from "./contexts/CirclesSDK";
 
-import {Sdk} from "@circles-sdk/sdk";
-import Dashboard from "./dashboard";
-
-
-const chainConfig = {
-  circlesRpcUrl: 'https://rpc.helsinki.aboutcircles.com',
-  pathfinderUrl: 'https://pathfinder.aboutcircles.com',
-  v1HubAddress: "0x29b9a7fBb8995b2423a71cC17cf9810798F6C543",
-  v2HubAddress: "0x",
-  migrationAddress: "0x"
-};
 
 export default function CirclesOnboarding() {
 
-  const [isConnected, setIsConnected] = useState(false);
+  const { sdk, isConnected, adapter, circlesProvider, circlesAddress, initSdk } = useContext(CirclesSDKContext);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [avatarImage, setAvatarImage] = useState(null);
   const [avatarInfo, setAvatar] = useState(null);
-  const [userAddress, setUserAddress] = useState("");
   const [userBalance, setUserBalance] = useState(0);
   const [mintableAmount, setMintableAmount] = useState(0);
   const [totalBalance, setTotalBalance] = useState(0);
@@ -38,53 +25,29 @@ export default function CirclesOnboarding() {
   const [mappedRelations, setTrustRelations] = useState([]);
   const navigate = useNavigate();
 
-  // Initialize the provider using the user's Ethereum wallet
-const provider = new ethers.BrowserProvider(window.ethereum);
-
-let walletAddress = null;
-let sdkInitialized = false;
-let sdk = null;
-let signer = null;
-
-// Function to initialize the SDK with the provided chainConfig and signer
-async function initializeSdk() {
-    if (!sdkInitialized) {
-        sdk = new Sdk(chainConfig, signer);
-        sdkInitialized = true;
-        console.log("SDK initialized:", sdk);
+  useEffect(() => {
+    if (isConnected) {
+      setIsLoggedIn(true);
+      handleAvatarCheckAndRegister();
+      fetchUserBalance(); // Fetch the user balance when connected
     }
-    return sdk;
-}
+  }, [isConnected, sdk, circlesAddress]);
 
-// Function to handle wallet connection and SDK initialization
-const connectWallet = async () => {
+
+  const connectWallet = async () => {
     try {
-        // Request the user to connect their Ethereum wallet
-        await window.ethereum.request({ method: "eth_requestAccounts" });
-
-        // Get the signer and wallet address from the provider
-        signer = await provider.getSigner();
-        walletAddress = await signer.getAddress();
-
-        // Initialize the SDK
-        await initializeSdk();
-
-        // Fetch and display the user's balance
-        const balance = await provider.getBalance(walletAddress);
-        setUserBalance(ethers.formatEther(balance));
-
-        // Update the UI with the wallet address and connection status
-        setUserAddress(walletAddress);
-        setIsConnected(true);
-        setIsLoggedIn(true);
-
-        // Optional: Handle any additional logic, such as avatar checks
-        await handleAvatarCheckAndRegister();
-
+      await initSdk();
+      await fetchUserBalance();
+      setIsConnected(true);
+      setIsLoggedIn(true);
+  
+      // Optional: Handle any additional logic, such as avatar checks
+      await handleAvatarCheckAndRegister();
+  
     } catch (error) {
-        console.error("Error connecting wallet:", error);
+      console.error("Error connecting wallet:", error);
     }
-};
+  };
   
 
   const disconnectWallet = () => {
@@ -92,21 +55,34 @@ const connectWallet = async () => {
     setIsLoggedIn(false);
     setUserAddress("");
     setUserBalance(0);
-    setAvatarImage(null);
+    setAvatar(null);
   };
+
+  const fetchUserBalance = async () => {
+    if (circlesAddress && circlesProvider) {
+      try {
+        // Fetch the balance for the circlesAddress
+        const balance = await circlesProvider.getBalance(circlesAddress);
+        setUserBalance(ethers.formatEther(balance));
+      } catch (error) {
+        console.error("Error fetching user balance:", error);
+      }
+    }
+  };
+
 
   const handleAvatarCheckAndRegister = async () => {
     try {
-      if (!sdkInitialized || !sdk) {
-        throw new Error("SDK is not initialized");
+      if (!sdk) {
+        throw new Error("SDK is not available");
       }
-      const avatarInfo = await sdk.getAvatar(walletAddress);
+      const avatarInfo = await sdk.getAvatar(circlesAddress);
       console.log("Avatar found:", avatarInfo);
       setAvatar(avatarInfo);
 
       const trustRelations = await avatarInfo.getTrustRelations("");
       console.log("Trust Relations:", trustRelations);
-  
+
       // Update trusted circles state
       setTrustedCircles(trustRelations.map(rel => rel.objectAvatar));
 
@@ -119,10 +95,9 @@ const connectWallet = async () => {
       setTrustRelations(mappedRelations);
       console.log(mappedRelations,"got mapped data");
 
-      
       // Fetch additional avatar details
-      const mintableAmount = await avatarInfo.getMintableAmount(walletAddress);
-      const totalBalance = await avatarInfo.getTotalBalance(walletAddress);
+      const mintableAmount = await avatarInfo.getMintableAmount(circlesAddress);
+      const totalBalance = await avatarInfo.getTotalBalance(circlesAddress);
       setMintableAmount(mintableAmount);
       setTotalBalance(totalBalance);
 
@@ -151,7 +126,7 @@ const connectWallet = async () => {
       await avatarInfo.personalMint();
   
       // Update total balance after minting
-      const totalBalance = await avatarInfo.getTotalBalance(walletAddress);
+      const totalBalance = await avatarInfo.getTotalBalance(circlesAddress);
       setTotalBalance(totalBalance);
   
       return { success: true, message: "Personal minting successful" };
@@ -160,13 +135,9 @@ const connectWallet = async () => {
     }
   };
 
-
-
-  
-  async function updateBalance()
-  {
-    const totalBalance = await avatarInfo.getTotalBalance(walletAddress);
-      setTotalBalance(totalBalance);
+  async function updateBalance() {
+    const totalBalance = await avatarInfo.getTotalBalance(circlesAddress);
+    setTotalBalance(totalBalance);
   }
 
   const send = async () => {
@@ -190,7 +161,7 @@ const connectWallet = async () => {
     } catch (error) {
       console.error("Error sending CRC tokens:", error);
     }
-    updateBalance()
+    updateBalance();
   };
 
   const validateRecipient = () => {
@@ -198,19 +169,12 @@ const connectWallet = async () => {
     const isValid = ethers.isAddress(recipient);
     setRecipientIsValid(isValid);
   };
-  
-
-
-
 
   useEffect(() => {
     if (isConnected) {
       handleAvatarCheckAndRegister();
     }
   }, [isConnected]);
-
-  
-
 
   const trustNewCircle = async () => {
     try {
@@ -240,7 +204,6 @@ const connectWallet = async () => {
       setTrustedCircles(trustedCircles.filter((c) => c !== circle));
       logTrustRelations();
   
-      // Call getTrustRelations after updating circles
     } catch (error) {
       console.error("Error untrusting circle:", error);
     }
@@ -257,7 +220,7 @@ const connectWallet = async () => {
             {isLoggedIn && (
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-6">
-                  <div className="text-sm font-medium">User Balance : {userBalance.slice(0, 6)} xDAI</div>
+                  {/* <div className="text-sm font-medium">User Balance : {userBalance.slice(0, 6)} xDAI</div> */}
                   <Button onClick={disconnectWallet} className="bg-red-700 hover:bg-red-600 text-white font-bold py-4 px-2 rounded">
                     Disconnect Wallet
                   </Button>
@@ -399,6 +362,3 @@ function UserIcon(props) {
     </svg>
   )
 }
-
-
-
