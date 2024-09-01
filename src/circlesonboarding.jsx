@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "./components/ui/scroll-area";
 import CirclesSDKContext from "./contexts/CirclesSDK";
+import { ethers } from "ethers";
 
 
 export default function CirclesOnboarding() {
