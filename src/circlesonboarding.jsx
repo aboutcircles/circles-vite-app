@@ -63,8 +63,8 @@ export default function CirclesOnboarding() {
     if (circlesAddress && circlesProvider) {
       try {
         // Fetch the balance for the circlesAddress
-        const balance = await circlesProvider.getBalance(circlesAddress);
-        setUserBalance(ethers.formatEther(balance));
+        const userBalance = await circlesProvider.getBalance(circlesAddress);
+        setUserBalance(ethers.formatEther(userBalance));
       } catch (error) {
         console.error("Error fetching user balance:", error);
       }
@@ -77,42 +77,52 @@ export default function CirclesOnboarding() {
       if (!sdk) {
         throw new Error("SDK is not available");
       }
+      
+      // Check if the avatar exists for the current address
       const avatarInfo = await sdk.getAvatar(circlesAddress);
-      console.log("Avatar found:", avatarInfo);
-      setAvatar(avatarInfo);
-
-      const trustRelations = await avatarInfo.getTrustRelations("");
-      console.log("Trust Relations:", trustRelations);
-
-      // Update trusted circles state
-      setTrustedCircles(trustRelations.map(rel => rel.objectAvatar));
-
-      const mappedRelations = trustRelations.map(rel => ({
-        timestamp: rel.timestamp, // Assuming date is a property in the trust relation object
-        objectAvatar: rel.objectAvatar,
-        relations: rel.relation  // Assuming relation is a property in the trust relation object
-      }));
-
-      setTrustRelations(mappedRelations);
-      console.log(mappedRelations,"got mapped data");
-
-      // Fetch additional avatar details
-      const mintableAmount = await avatarInfo.getMintableAmount(circlesAddress);
-      const totalBalance = await avatarInfo.getTotalBalance(circlesAddress);
-      setMintableAmount(mintableAmount);
-      setTotalBalance(totalBalance);
-
-    } catch (error) {
-      console.log("Avatar not found, registering as human...");
-      try {
-        const newAvatar = await sdk.registerHuman();
-        console.log("Registered as V1 Human:", newAvatar);
-        setAvatar(newAvatar);
-      } catch (registerError) {
-        console.error("Error registering avatar:", registerError);
+      
+      if (avatarInfo) {
+        // Avatar found, process existing avatar
+        console.log("Avatar found:", avatarInfo);
+        setAvatar(avatarInfo);
+  
+        const trustRelations = await avatarInfo.getTrustRelations("");
+        console.log("Trust Relations:", trustRelations);
+  
+        // Update trusted circles state
+        setTrustedCircles(trustRelations.map(rel => rel.objectAvatar));
+  
+        const mappedRelations = trustRelations.map(rel => ({
+          timestamp: rel.timestamp, // Assuming date is a property in the trust relation object
+          objectAvatar: rel.objectAvatar,
+          relations: rel.relation  // Assuming relation is a property in the trust relation object
+        }));
+  
+        setTrustRelations(mappedRelations);
+        console.log(mappedRelations, "got mapped data");
+  
+        // Fetch additional avatar details
+        const mintableAmount = await avatarInfo.getMintableAmount(circlesAddress);
+        const totalBalance = await avatarInfo.getTotalBalance(circlesAddress);
+        setMintableAmount(mintableAmount);
+        setTotalBalance(totalBalance);
+  
+      } else {
+        // No existing avatar, register a new one
+        console.log("Avatar not found, registering as human...");
+        try {
+          const newAvatar = await sdk.registerHuman();
+          console.log("Registered as V1 Human:", newAvatar);
+          setAvatar(newAvatar);
+        } catch (registerError) {
+          console.error("Error registering avatar:", registerError);
+        }
       }
+    } catch (error) {
+      console.error("Error in handleAvatarCheckAndRegister:", error);
     }
   };
+  
 
   const handleNavigateToDashboard = () => {
     navigate('/dashboard', { state: { trustRelations: mappedRelations } });
@@ -221,7 +231,7 @@ export default function CirclesOnboarding() {
             {isLoggedIn && (
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-6">
-                  {/* <div className="text-sm font-medium">User Balance : {userBalance.slice(0, 6)} xDAI</div> */}
+                  <div className="text-sm font-medium">User Balance : {userBalance.slice(0, 6)} xDAI</div>
                   <Button onClick={disconnectWallet} className="bg-red-700 hover:bg-red-600 text-white font-bold py-4 px-2 rounded">
                     Disconnect Wallet
                   </Button>

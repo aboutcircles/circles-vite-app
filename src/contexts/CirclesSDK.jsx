@@ -42,7 +42,6 @@ export const CirclesSDK = ({ children }) => {
     }, []);
 
     useEffect(() => {
-        initSdk(); // Initialize SDK on component mount
     }, [initSdk]);
 
     return (
