@@ -22,7 +22,6 @@ export default function CirclesOnboarding() {
   const [recipientIsValid, setRecipientIsValid] = useState(false);
   const [trustedCircles, setTrustedCircles] = useState([]);
   const [untrustedCircles, setUntrustedCircles] = useState([]);
-  const [newCircle, setNewCircle] = useState("");
   const [mappedRelations, setTrustRelations] = useState([]);
   const navigate = useNavigate();
 
