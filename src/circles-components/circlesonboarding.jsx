@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "../components/ui/scroll-area";
 import CirclesSDKContext from "../contexts/CirclesSDK";
 import ManageTrustAndUntrust from "./ManageTrustUntrust";
+import { validateRecipient } from "@/utils/validateRecipient";
 import { ethers } from "ethers";
 
 
@@ -164,7 +165,7 @@ useEffect(() => {
         throw new Error("Invalid value");
       }
 
-      if (!ethers.isAddress(recipient)) {
+      if (!validateRecipient(recipient)) {
         throw new Error("Invalid recipient address");
       }
 
@@ -177,9 +178,10 @@ useEffect(() => {
     updateBalance();
   };
 
-  const validateRecipient = () => {
-    // Assuming a simple check for a valid Ethereum address format
-    const isValid = ethers.isAddress(recipient);
+ 
+
+  const handleValidateRecipient = () => {
+    const isValid =validateRecipient(recipient);
     setRecipientIsValid(isValid);
   };
 
@@ -223,7 +225,7 @@ useEffect(() => {
                         placeholder="Enter recipient address"
                         value={recipient}
                         onChange={(e) => setRecipient(e.target.value)}
-                        onBlur={validateRecipient}
+                        onBlur={handleValidateRecipient}
                       />
                        {!recipientIsValid && <p className="text-red-500">Please enter a valid recipient address</p>}
                     </div>
