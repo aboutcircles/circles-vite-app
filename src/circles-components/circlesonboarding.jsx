@@ -4,15 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "./components/ui/scroll-area";
-import CirclesSDKContext from "./contexts/CirclesSDK";
+import { ScrollArea } from "../components/ui/scroll-area";
+import CirclesSDKContext from "../contexts/CirclesSDK";
 import { ethers } from "ethers";
 
 
 export default function CirclesOnboarding() {
 
   const { sdk, isConnected, adapter, circlesProvider, circlesAddress, initSdk } = useContext(CirclesSDKContext);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [avatarInfo, setAvatar] = useState(null);
   const [userBalance, setUserBalance] = useState(0);
   const [mintableAmount, setMintableAmount] = useState(0);
@@ -26,34 +25,33 @@ export default function CirclesOnboarding() {
   const [mappedRelations, setTrustRelations] = useState([]);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (isConnected) {
-      setIsLoggedIn(true);
-      handleAvatarCheckAndRegister();
-      fetchUserBalance(); // Fetch the user balance when connected
-    }
-  }, [isConnected, sdk, circlesAddress]);
+// Connect Wallet Function
+const connectWallet = async () => {
+  try {
+    await initSdk();
+    await fetchUserBalance();
+    setIsConnected(true);
 
+  
+    // Perform avatar check only after connection is established
+    await handleAvatarCheck();
+  } catch (error) {
+    console.error("Error connecting wallet:", error);
+  }
+};
 
-  const connectWallet = async () => {
-    try {
-      await initSdk();
-      await fetchUserBalance();
-      setIsConnected(true);
-      setIsLoggedIn(true);
-  
-      // Optional: Handle any additional logic, such as avatar checks
-      await handleAvatarCheckAndRegister();
-  
-    } catch (error) {
-      console.error("Error connecting wallet:", error);
-    }
-  };
+// Use Effect Hook
+useEffect(() => {
+  if (isConnected && sdk && circlesAddress) {
+    handleAvatarCheck(); // Check avatar when connection status, SDK, or address changes
+    fetchUserBalance(); // Fetch the user balance when connected
+  }
+}, [isConnected, sdk, circlesAddress]);
+
   
 
   const disconnectWallet = () => {
     setIsConnected(false);
-    setIsLoggedIn(false);
     setUserAddress("");
     setUserBalance(0);
     setAvatar(null);
@@ -72,15 +70,15 @@ export default function CirclesOnboarding() {
   };
 
 
-  const handleAvatarCheckAndRegister = async () => {
+  const handleAvatarCheck = async () => {
     try {
       if (!sdk) {
         throw new Error("SDK is not available");
       }
-      
+  
       // Check if the avatar exists for the current address
       const avatarInfo = await sdk.getAvatar(circlesAddress);
-      
+  
       if (avatarInfo) {
         // Avatar found, process existing avatar
         console.log("Avatar found:", avatarInfo);
@@ -106,22 +104,26 @@ export default function CirclesOnboarding() {
         const totalBalance = await avatarInfo.getTotalBalance(circlesAddress);
         setMintableAmount(mintableAmount);
         setTotalBalance(totalBalance);
-  
       } else {
         // No existing avatar, register a new one
         console.log("Avatar not found, registering as human...");
-        try {
-          const newAvatar = await sdk.registerHuman();
-          console.log("Registered as V1 Human:", newAvatar);
-          setAvatar(newAvatar);
-        } catch (registerError) {
-          console.error("Error registering avatar:", registerError);
-        }
+        await handleRegisterAvatar(); // Call the registration function
       }
     } catch (error) {
-      console.error("Error in handleAvatarCheckAndRegister:", error);
+      console.error("Error in handleAvatarCheck:", error);
     }
   };
+  
+  const handleRegisterAvatar = async () => {
+    try {
+      const newAvatar = await sdk.registerHuman();
+      console.log("Registered as V1 Human:", newAvatar);
+      setAvatar(newAvatar);
+    } catch (registerError) {
+      console.error("Error registering avatar:", registerError);
+    }
+  };
+  
   
 
   const handleNavigateToDashboard = () => {
@@ -181,11 +183,6 @@ export default function CirclesOnboarding() {
     setRecipientIsValid(isValid);
   };
 
-  useEffect(() => {
-    if (isConnected) {
-      handleAvatarCheckAndRegister();
-    }
-  }, [isConnected]);
 
   const trustNewCircle = async () => {
     try {
@@ -228,10 +225,10 @@ export default function CirclesOnboarding() {
         <div className="w-full max-w-6xl bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden">
           <header className="bg-gray-950 text-white px-6 py-4 flex items-center justify-between">
             <h1 className="text-2xl font-bold">Welcome to Circles Dev Playground</h1>
-            {isLoggedIn && (
+            {isConnected && (
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-6">
-                  <div className="text-sm font-medium">User Balance : {userBalance.slice(0, 6)} xDAI</div>
+                  <div className="text-sm font-medium">User Balance : {Number(userBalance).toFixed(4)} XDAI</div>
                   <Button onClick={disconnectWallet} className="bg-red-700 hover:bg-red-600 text-white font-bold py-4 px-2 rounded">
                     Disconnect Wallet
                   </Button>
@@ -298,7 +295,7 @@ export default function CirclesOnboarding() {
                           Mint Circles
                         </Button>
                       ) : (
-                        <Button onClick={handleAvatarCheckAndRegister} className="mt-2 bg-blue-800 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded">
+                        <Button onClick={handleAvatarCheck} className="mt-2 bg-blue-800 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded">
                           Get your Circles Avatar
                         </Button>
                       )}

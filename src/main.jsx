@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import App from './App.jsx';
+import App from './circles-components/App.jsx';
 import './index.css';
 
 // Use ReactDOM.createRoot to render your app

@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { useLocation,useNavigate } from 'react-router-dom';
-import { ScrollArea } from "./components/ui/scroll-area";
-import { Button } from "./components/ui/button";
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "./components/ui/table";
+import { ScrollArea } from "../components/ui/scroll-area";
+import { Button } from "../components/ui/button";
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "../components/ui/table";
 
 const Dashboard = () => {
   const location = useLocation();
