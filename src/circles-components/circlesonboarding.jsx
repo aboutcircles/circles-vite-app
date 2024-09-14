@@ -11,7 +11,7 @@ import { ethers } from "ethers";
 
 export default function CirclesOnboarding() {
 
-  const { sdk, isConnected, adapter, circlesProvider, circlesAddress, initSdk } = useContext(CirclesSDKContext);
+  const { sdk, setIsConnected, isConnected, adapter, circlesProvider, circlesAddress, initSdk } = useContext(CirclesSDKContext);
   const [avatarInfo, setAvatar] = useState(null);
   const [userBalance, setUserBalance] = useState(0);
   const [mintableAmount, setMintableAmount] = useState(0);
@@ -32,9 +32,7 @@ const connectWallet = async () => {
     await fetchUserBalance();
     setIsConnected(true);
 
-  
     // Perform avatar check only after connection is established
-    await handleAvatarCheck();
   } catch (error) {
     console.error("Error connecting wallet:", error);
   }
@@ -76,12 +74,14 @@ useEffect(() => {
         throw new Error("SDK is not available");
       }
   
+      if (!circlesAddress) {
+        throw new Error("Circles address is not available");
+      }
+  
       // Check if the avatar exists for the current address
       const avatarInfo = await sdk.getAvatar(circlesAddress);
   
       if (avatarInfo) {
-        // Avatar found, process existing avatar
-        console.log("Avatar found:", avatarInfo);
         setAvatar(avatarInfo);
   
         const trustRelations = await avatarInfo.getTrustRelations("");
@@ -91,9 +91,9 @@ useEffect(() => {
         setTrustedCircles(trustRelations.map(rel => rel.objectAvatar));
   
         const mappedRelations = trustRelations.map(rel => ({
-          timestamp: rel.timestamp, // Assuming date is a property in the trust relation object
+          timestamp: rel.timestamp,
           objectAvatar: rel.objectAvatar,
-          relations: rel.relation  // Assuming relation is a property in the trust relation object
+          relations: rel.relation
         }));
   
         setTrustRelations(mappedRelations);
@@ -114,6 +114,7 @@ useEffect(() => {
     }
   };
   
+  
   const handleRegisterAvatar = async () => {
     try {
       const newAvatar = await sdk.registerHuman();
@@ -123,7 +124,6 @@ useEffect(() => {
       console.error("Error registering avatar:", registerError);
     }
   };
-  
   
 
   const handleNavigateToDashboard = () => {

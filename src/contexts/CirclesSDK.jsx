@@ -45,7 +45,7 @@ export const CirclesSDK = ({ children }) => {
     }, [initSdk]);
 
     return (
-        <CirclesSDKContext.Provider value={{ sdk, isConnected, adapter, circlesProvider, circlesAddress, initSdk }}>
+        <CirclesSDKContext.Provider value={{ sdk, setIsConnected, isConnected, adapter, circlesProvider, circlesAddress, initSdk }}>
             {children}
         </CirclesSDKContext.Provider>
     );
