@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "../components/ui/scroll-area";
 import CirclesSDKContext from "../contexts/CirclesSDK";
+import ManageTrustAndUntrust from "./ManageTrustUntrust";
 import { ethers } from "ethers";
 
 
@@ -184,41 +185,6 @@ useEffect(() => {
   };
 
 
-  const trustNewCircle = async () => {
-    try {
-      if (!avatarInfo) {
-        throw new Error("Avatar not found");
-      }
-  
-      await avatarInfo.trust(newCircle);
-      setTrustedCircles([...trustedCircles, newCircle]);
-      setUntrustedCircles(untrustedCircles.filter((c) => c !== newCircle));
-      setNewCircle("");
-      logTrustRelations();
-  
-    } catch (error) {
-      console.error("Error trusting new circle:", error);
-    }
-  };
-  
-  const untrustCircle = async (circle) => {
-    try {
-      if (!avatarInfo) {
-        throw new Error("Avatar not found");
-      }
-  
-      await avatarInfo.untrust(circle);
-      setUntrustedCircles([...untrustedCircles, circle]);
-      setTrustedCircles(trustedCircles.filter((c) => c !== circle));
-      logTrustRelations();
-  
-    } catch (error) {
-      console.error("Error untrusting circle:", error);
-    }
-  };
-  
-
-
   return (
     
       <div className="flex flex-col items-center justify-center h-screen bg-gray-100 dark:bg-gray-900">
@@ -304,43 +270,13 @@ useEffect(() => {
                 </div>
                 <div className="bg-gray-100 dark:bg-gray-900 p-6 rounded-lg h-full md:col-span-2">
                   <h2 className="text-xl font-bold mb-4">Trust new circles avatar</h2>
-                    <div className="space-y-2">                     
-                    <div className="flex items-center space-x-2">
-                    <Input
-                    id="newCircle"
-                    type="text"
-                    placeholder="Enter new circle address"
-                    value={newCircle}
-                    onChange={(e) => setNewCircle(e.target.value)}
-                    onKeyPress={(e) => {
-                      if (e.key === "Enter") {
-                        trustNewCircle(newCircle);
-                      }
-                    }}
-                    className="flex-1"
-                  />
-                  <Button
-                    onClick={() => trustNewCircle(newCircle)}
-                    className="bg-blue-800 hover:bg-blue-600 text-white font-bold py-4 px-6 rounded"
-                  >
-                    Trust
-                  </Button>
-                </div>
-                    </div>
-                    <ScrollArea style={{ maxHeight: '150px', overflowY: 'auto', marginTop: '10px' }} className="custom-scroll-area">
-                        <div className="space-y-2">
-                            {[...trustedCircles, ...untrustedCircles].map((circle, index) => (
-                            <div key={index} className="flex items-center justify-between bg-gray-200 dark:bg-gray-700 p-2 rounded-lg">
-                                <div>{circle}</div>
-                                {trustedCircles.includes(circle) ? (
-                                <Button onClick={() => untrustCircle(circle)} variant="outline" size="sm">Untrust</Button>
-                            ) : (
-                            <Button onClick={() => trustNewCircle(circle)} variant="outline" size="sm">
-                            Trust
-                            </Button>)}
-                            </div>))}               
-                        </div>
-                    </ScrollArea>
+                    <ManageTrustAndUntrust
+                      avatarInfo={avatarInfo}
+                      trustedCircles={trustedCircles}
+                      setTrustedCircles={setTrustedCircles}
+                      untrustedCircles={untrustedCircles}
+                      setUntrustedCircles={setUntrustedCircles}
+                      />
                         </div>
                         </>
                     )}
