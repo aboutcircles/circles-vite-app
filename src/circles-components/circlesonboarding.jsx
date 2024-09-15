@@ -9,6 +9,7 @@ import CirclesSDKContext from "../contexts/CirclesSDK";
 import ManageTrustAndUntrust from "./ManageTrustUntrust";
 import { validateRecipient } from "@/utils/validateRecipient";
 import PersonalMintComponent from "./personalMint";
+import RecipientValidator from "./recipientValidator";
 
 import { ethers } from "ethers";
 
@@ -161,15 +162,6 @@ useEffect(() => {
     }
     updateBalance();
   };
-
- 
-
-  const handleValidateRecipient = () => {
-    const isValid =validateRecipient(recipient);
-    setRecipientIsValid(isValid);
-  };
-
-
   return (
     
       <div className="flex flex-col items-center justify-center h-screen bg-gray-100 dark:bg-gray-900">
@@ -201,7 +193,8 @@ useEffect(() => {
                 <div className="bg-gray-100 dark:bg-gray-900 p-6 rounded-lg">
                   <h2 className="text-xl font-bold mb-4">Send Circles CRC Token</h2>
                   <div className="space-y-4">
-                    <div className="space-y-2">
+                  <RecipientValidator recipient={recipient} setRecipientIsValid={setRecipientIsValid} recipientIsValid={recipientIsValid} setRecipient={setRecipient} />
+                    {/* <div className="space-y-2">
                       <Label htmlFor="recipient">Recipient Address</Label>
                       <Input
                         id="recipient"
@@ -212,7 +205,7 @@ useEffect(() => {
                         onBlur={handleValidateRecipient}
                       />
                        {!recipientIsValid && <p className="text-red-500">Please enter a valid recipient address</p>}
-                    </div>
+                    </div> */}
                     <div className="space-y-2">
                       <Label htmlFor="amount">Amount to Send</Label>
                       <Input
@@ -260,8 +253,8 @@ useEffect(() => {
                       untrustedCircles={untrustedCircles}
                       setUntrustedCircles={setUntrustedCircles}
                       />
-                        </div>
-                        </>
+                      </div>
+                      </>
                     )}
                 </main>
             </div>
