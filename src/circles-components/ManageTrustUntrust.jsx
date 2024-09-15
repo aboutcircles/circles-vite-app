@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "../components/ui/scroll-area";
@@ -9,9 +9,9 @@ const ManageTrustAndUntrust = ({
   trustedCircles,
   setTrustedCircles,
   untrustedCircles,
-  setUntrustedCircles
+  setUntrustedCircles,
 }) => {
-  const [newCircle, setNewCircle] = useState('');
+  const [newCircle, setNewCircle] = useState("");
 
   // Function to trust a new circle
   const trustNewCircle = async () => {
@@ -21,10 +21,9 @@ const ManageTrustAndUntrust = ({
       }
 
       await avatarInfo.trust(newCircle);
-      setTrustedCircles(prev => [...prev, newCircle]);
-      setUntrustedCircles(prev => prev.filter((c) => c !== newCircle));
+      setTrustedCircles((prev) => [...prev, newCircle]);
+      setUntrustedCircles((prev) => prev.filter((c) => c !== newCircle));
       setNewCircle("");
-
     } catch (error) {
       console.error("Error trusting new circle:", error);
     }
@@ -38,10 +37,9 @@ const ManageTrustAndUntrust = ({
       }
 
       await avatarInfo.untrust(circle);
-      setUntrustedCircles(prev => [...prev, circle]);
-      setTrustedCircles(prev => prev.filter((c) => c !== circle));
+      setUntrustedCircles((prev) => [...prev, circle]);
+      setTrustedCircles((prev) => prev.filter((c) => c !== circle));
       logTrustRelations();
-
     } catch (error) {
       console.error("Error untrusting circle:", error);
     }
@@ -71,17 +69,31 @@ const ManageTrustAndUntrust = ({
           Trust
         </Button>
       </div>
-      <ScrollArea style={{ maxHeight: '150px', overflowY: 'auto', marginTop: '10px' }} className="custom-scroll-area">
+      <ScrollArea
+        style={{ maxHeight: "150px", overflowY: "auto", marginTop: "10px" }}
+        className="custom-scroll-area"
+      >
         <div className="space-y-2">
           {[...trustedCircles, ...untrustedCircles].map((circle, index) => (
-            <div key={index} className="flex items-center justify-between bg-gray-200 dark:bg-gray-700 p-2 rounded-lg">
+            <div
+              key={index}
+              className="flex items-center justify-between bg-gray-200 dark:bg-gray-700 p-2 rounded-lg"
+            >
               <div>{circle}</div>
               {trustedCircles.includes(circle) ? (
-                <Button onClick={() => untrustCircle(circle)} variant="outline" size="sm">
+                <Button
+                  onClick={() => untrustCircle(circle)}
+                  variant="outline"
+                  size="sm"
+                >
                   Untrust
                 </Button>
               ) : (
-                <Button onClick={() => trustNewCircle(circle)} variant="outline" size="sm">
+                <Button
+                  onClick={() => trustNewCircle(circle)}
+                  variant="outline"
+                  size="sm"
+                >
                   Trust
                 </Button>
               )}
