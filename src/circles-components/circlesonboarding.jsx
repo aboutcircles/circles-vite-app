@@ -3,13 +3,13 @@ import React,{ useState, useEffect, useContext } from "react";
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 
 import CirclesSDKContext from "../contexts/CirclesSDK";
 import ManageTrustAndUntrust from "./ManageTrustUntrust";
 import SendCircles from "./transferCircles";
 import PersonalMintComponent from "./personalMint";
 import RecipientValidator from "./recipientValidator";
+import TrustRelations from "./trustRelations";
 
 import { ethers } from "ethers";
 
@@ -22,7 +22,6 @@ export default function CirclesOnboarding() {
   const [mintableAmount, setMintableAmount] = useState(0);
   const [totalBalance, setTotalBalance] = useState(0);
   const [recipient, setRecipient] = useState("");
-  const [valueString, setValueString] = useState("");
   const [recipientIsValid, setRecipientIsValid] = useState(false);
   const [trustedCircles, setTrustedCircles] = useState([]);
   const [untrustedCircles, setUntrustedCircles] = useState([]);
@@ -42,7 +41,6 @@ const connectWallet = async () => {
   }
 };
 
-// Use Effect Hook
 useEffect(() => {
   if (isConnected && sdk && circlesAddress) {
     handleAvatarCheck(); // Check avatar when connection status, SDK, or address changes
@@ -88,26 +86,10 @@ useEffect(() => {
       if (avatarInfo) {
         setAvatar(avatarInfo);
   
-        const trustRelations = await avatarInfo.getTrustRelations("");
-        console.log("Trust Relations:", trustRelations);
-  
-        // Update trusted circles state
-        setTrustedCircles(trustRelations.map(rel => rel.objectAvatar));
-  
-        const mappedRelations = trustRelations.map(rel => ({
-          timestamp: rel.timestamp,
-          objectAvatar: rel.objectAvatar,
-          relations: rel.relation
-        }));
-  
-        setTrustRelations(mappedRelations);
-        console.log(mappedRelations, "got mapped data");
-  
-        // Fetch additional avatar details
         const mintableAmount = await avatarInfo.getMintableAmount(circlesAddress);
-        const totalBalance = await avatarInfo.getTotalBalance(circlesAddress);
         setMintableAmount(mintableAmount);
-        setTotalBalance(totalBalance);
+        updateBalance()
+        
       } else {
         // No existing avatar, register a new one
         console.log("Avatar not found, registering as human...");
@@ -129,7 +111,6 @@ useEffect(() => {
     }
   };
   
-
   const handleNavigateToDashboard = () => {
     navigate('/dashboard', { state: { trustRelations: mappedRelations } });
   };
@@ -139,29 +120,6 @@ useEffect(() => {
     setTotalBalance(totalBalance);
   }
 
-  // const send = async () => {
-  //   try {
-  //     if (!avatarInfo) {
-  //       throw new Error("Avatar not found");
-  //     }
-
-  //     const value = parseFloat(valueString);
-  //     if (isNaN(value) || value <= 0) {
-  //       throw new Error("Invalid value");
-  //     }
-
-  //     if (!validateRecipient(recipient)) {
-  //       throw new Error("Invalid recipient address");
-  //     }
-
-  //     await avatarInfo.transfer(recipient, value);
-  //     console.log(`Successfully sent ${value} CRC tokens to ${recipient}`);
-  //     // Optionally, redirect to dashboard or show a success message
-  //   } catch (error) {
-  //     console.error("Error sending CRC tokens:", error);
-  //   }
-  //   updateBalance();
-  // };
   return (
     
       <div className="flex flex-col items-center justify-center h-screen bg-gray-100 dark:bg-gray-900">
@@ -195,19 +153,6 @@ useEffect(() => {
                   <div className="space-y-4">
                   <RecipientValidator recipient={recipient} setRecipientIsValid={setRecipientIsValid} recipientIsValid={recipientIsValid} setRecipient={setRecipient} />
                   <SendCircles avatarInfo={avatarInfo} recipient={recipient} updateBalance={updateBalance} />
-                    {/* <div className="space-y-2">
-                      <Label htmlFor="amount">Amount to Send</Label>
-                      <Input
-                        id="amount"
-                        type="number"
-                        placeholder="Enter amount to send"
-                        value={valueString}
-                        onChange={(e) => setValueString(e.target.value)}
-                      />
-                    </div>
-                    <Button onClick={send} disabled={!recipientIsValid} className="w-full bg-blue-800 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded">
-                      Send CRC
-                    </Button> */}
                   </div>
                 </div>
                 <div className="bg-gray-100 dark:bg-gray-900 p-6 rounded-lg">
@@ -241,7 +186,13 @@ useEffect(() => {
                       setTrustedCircles={setTrustedCircles}
                       untrustedCircles={untrustedCircles}
                       setUntrustedCircles={setUntrustedCircles}
-                      />
+                      /> 
+                      <TrustRelations 
+                      avatarInfo={avatarInfo} 
+                      setTrustedCircles={setTrustedCircles} 
+                      setTrustRelations={setTrustRelations} 
+                    />
+
                       </div>
                       </>
                     )}
