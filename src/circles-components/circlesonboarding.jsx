@@ -4,10 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "../components/ui/scroll-area";
+
 import CirclesSDKContext from "../contexts/CirclesSDK";
 import ManageTrustAndUntrust from "./ManageTrustUntrust";
 import { validateRecipient } from "@/utils/validateRecipient";
+import PersonalMintComponent from "./personalMint";
+
 import { ethers } from "ethers";
 
 
@@ -131,24 +133,6 @@ useEffect(() => {
     navigate('/dashboard', { state: { trustRelations: mappedRelations } });
   };
 
-  const personalMint = async () => {
-    try {
-      if (!avatarInfo) {
-        throw new Error("Avatar not found");
-      }
-  
-      await avatarInfo.personalMint();
-  
-      // Update total balance after minting
-      const totalBalance = await avatarInfo.getTotalBalance(circlesAddress);
-      setTotalBalance(totalBalance);
-  
-      return { success: true, message: "Personal minting successful" };
-    } catch (error) {
-      throw new Error(`Error minting Circles: ${error.message}`);
-    }
-  };
-
   async function updateBalance() {
     const totalBalance = await avatarInfo.getTotalBalance(circlesAddress);
     setTotalBalance(totalBalance);
@@ -257,11 +241,9 @@ useEffect(() => {
                     <div>
                       <Label className="block text-sm font-medium">Address: {avatarInfo?.address}</Label>
                       <Label className="block text-sm font-medium">Total Balance: {totalBalance}</Label>
-                      {avatarInfo ? (
-                        <Button onClick={personalMint} className="mt-2 bg-green-800 hover:bg-green-600 text-white font-bold py-2 px-6 rounded">
-                          Mint Circles
-                        </Button>
-                      ) : (
+                      {avatarInfo ? 
+                       <PersonalMintComponent/>
+                       : (
                         <Button onClick={handleAvatarCheck} className="mt-2 bg-blue-800 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded">
                           Get your Circles Avatar
                         </Button>
