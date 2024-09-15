@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 
 import CirclesSDKContext from "../contexts/CirclesSDK";
 import ManageTrustAndUntrust from "./ManageTrustUntrust";
-import { validateRecipient } from "@/utils/validateRecipient";
+import SendCircles from "./transferCircles";
 import PersonalMintComponent from "./personalMint";
 import RecipientValidator from "./recipientValidator";
 
@@ -121,8 +121,8 @@ useEffect(() => {
   
   const handleRegisterAvatar = async () => {
     try {
-      const newAvatar = await sdk.registerHuman();
-      console.log("Registered as V1 Human:", newAvatar);
+      const newAvatar = await sdk.registerHumanV2();
+      console.log("Registered as V2 Human:", newAvatar);
       setAvatar(newAvatar);
     } catch (registerError) {
       console.error("Error registering avatar:", registerError);
@@ -139,29 +139,29 @@ useEffect(() => {
     setTotalBalance(totalBalance);
   }
 
-  const send = async () => {
-    try {
-      if (!avatarInfo) {
-        throw new Error("Avatar not found");
-      }
+  // const send = async () => {
+  //   try {
+  //     if (!avatarInfo) {
+  //       throw new Error("Avatar not found");
+  //     }
 
-      const value = parseFloat(valueString);
-      if (isNaN(value) || value <= 0) {
-        throw new Error("Invalid value");
-      }
+  //     const value = parseFloat(valueString);
+  //     if (isNaN(value) || value <= 0) {
+  //       throw new Error("Invalid value");
+  //     }
 
-      if (!validateRecipient(recipient)) {
-        throw new Error("Invalid recipient address");
-      }
+  //     if (!validateRecipient(recipient)) {
+  //       throw new Error("Invalid recipient address");
+  //     }
 
-      await avatarInfo.transfer(recipient, value);
-      console.log(`Successfully sent ${value} CRC tokens to ${recipient}`);
-      // Optionally, redirect to dashboard or show a success message
-    } catch (error) {
-      console.error("Error sending CRC tokens:", error);
-    }
-    updateBalance();
-  };
+  //     await avatarInfo.transfer(recipient, value);
+  //     console.log(`Successfully sent ${value} CRC tokens to ${recipient}`);
+  //     // Optionally, redirect to dashboard or show a success message
+  //   } catch (error) {
+  //     console.error("Error sending CRC tokens:", error);
+  //   }
+  //   updateBalance();
+  // };
   return (
     
       <div className="flex flex-col items-center justify-center h-screen bg-gray-100 dark:bg-gray-900">
@@ -194,19 +194,8 @@ useEffect(() => {
                   <h2 className="text-xl font-bold mb-4">Send Circles CRC Token</h2>
                   <div className="space-y-4">
                   <RecipientValidator recipient={recipient} setRecipientIsValid={setRecipientIsValid} recipientIsValid={recipientIsValid} setRecipient={setRecipient} />
+                  <SendCircles avatarInfo={avatarInfo} recipient={recipient} updateBalance={updateBalance} />
                     {/* <div className="space-y-2">
-                      <Label htmlFor="recipient">Recipient Address</Label>
-                      <Input
-                        id="recipient"
-                        type="text"
-                        placeholder="Enter recipient address"
-                        value={recipient}
-                        onChange={(e) => setRecipient(e.target.value)}
-                        onBlur={handleValidateRecipient}
-                      />
-                       {!recipientIsValid && <p className="text-red-500">Please enter a valid recipient address</p>}
-                    </div> */}
-                    <div className="space-y-2">
                       <Label htmlFor="amount">Amount to Send</Label>
                       <Input
                         id="amount"
@@ -218,7 +207,7 @@ useEffect(() => {
                     </div>
                     <Button onClick={send} disabled={!recipientIsValid} className="w-full bg-blue-800 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded">
                       Send CRC
-                    </Button>
+                    </Button> */}
                   </div>
                 </div>
                 <div className="bg-gray-100 dark:bg-gray-900 p-6 rounded-lg">
@@ -237,7 +226,7 @@ useEffect(() => {
                       {avatarInfo ? 
                        <PersonalMintComponent/>
                        : (
-                        <Button onClick={handleAvatarCheck} className="mt-2 bg-blue-800 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded">
+                        <Button onClick={handleRegisterAvatar} className="mt-2 bg-blue-800 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded">
                           Get your Circles Avatar
                         </Button>
                       )}
