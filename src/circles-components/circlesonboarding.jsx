@@ -106,8 +106,8 @@ export default function CirclesOnboarding() {
 
   const handleRegisterAvatar = async () => {
     try {
-      const newAvatar = await sdk.registerHumanV2();
-      console.log("Registered as V2 Human:", newAvatar);
+      const newAvatar = await sdk.registerHuman();
+      console.log("Registered as V1 Human:", newAvatar);
       setAvatar(newAvatar);
     } catch (registerError) {
       console.error("Error registering avatar:", registerError);
