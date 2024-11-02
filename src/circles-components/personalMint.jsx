@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 
-const PersonalMintComponent = ({ avatarInfo, circlesAddress }) => {
+const PersonalMintComponent = ({ avatarInfo, circlesAddress, handleregi }) => {
   const [totalBalance, setTotalBalance] = useState(0);
 
   const personalMint = async () => {
