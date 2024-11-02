@@ -13,46 +13,57 @@ export const CirclesSDK = ({ children }) => {
 
   const chainConfig = {
     pathfinderUrl: "https://pathfinder.aboutcircles.com",
-    circlesRpcUrl: "https://rpc.falkenstein.aboutcircles.com",
+    circlesRpcUrl: "https://rpc.aboutcircles.com/",
     v1HubAddress: "0x29b9a7fbb8995b2423a71cc17cf9810798f6c543",
-    v2HubAddress: "0xa5c7ADAE2fd3844f12D52266Cb7926f8649869Da",
-    migrationAddress: "0xe1dCE89512bE1AeDf94faAb7115A1Ba6AEff4201",
-    nameRegistryAddress: "0x738fFee24770d0DE1f912adf2B48b0194780E9AD",
-    profileServiceUrl: "https://chiado-pathfinder.aboutcircles.com/profiles/",
+    v2HubAddress: "0x3D61f0A272eC69d65F5CFF097212079aaFDe8267",
+    migrationAddress: "0x28141b6743c8569Ad8B20Ac09046Ba26F9Fb1c90",
+    nameRegistryAddress: "0x8D1BEBbf5b8DFCef0F7E2039e4106A76Cb66f968",
+    profileServiceUrl: "https://rpc.aboutcircles.com/profiles/",
+    baseGroupMintPolicy: "0x79Cbc9C7077dF161b92a745345A6Ade3fC626A60",
   };
 
-  const initSdk = useCallback(async () => {
+  const initializeSdk = useCallback(async () => {
     try {
-      const adapter = new BrowserProviderContractRunner();
-      await adapter.init(); // Initialize the adapter before using it
-      setAdapter(adapter); // Set the adapter in the state after initialization
+      const newAdapter = new BrowserProviderContractRunner();
+      await newAdapter.init();
+      setAdapter(newAdapter);
 
-      const circlesProvider = adapter.provider;
-      setCirclesProvider(circlesProvider);
+      const provider = newAdapter.provider;
+      const address = await newAdapter.address;
 
-      const circlesAddress = await adapter.address;
-      setCirclesAddress(circlesAddress);
+      setCirclesProvider(provider);
+      setCirclesAddress(address);
 
-      const sdk = new Sdk(chainConfig, adapter); // Pass the initialized adapter to the SDK
-      setSdk(sdk); // Set the SDK in the state
+      const sdkInstance = new Sdk(newAdapter, chainConfig);
+      setSdk(sdkInstance);
       setIsConnected(true);
+      
+      console.log("SDK initialized:", sdkInstance);
+      return sdkInstance;
     } catch (error) {
       console.error("Error initializing SDK:", error);
+      setIsConnected(false);
+      return null;
     }
   }, []);
 
-  useEffect(() => {}, [initSdk]);
+  const disconnectWallet = useCallback(() => {
+    setIsConnected(false);
+    setCirclesAddress(null);
+    setSdk(null);
+  }, []);
 
   return (
     <CirclesSDKContext.Provider
       value={{
         sdk,
-        setIsConnected,
         isConnected,
+        setIsConnected,
         adapter,
         circlesProvider,
         circlesAddress,
-        initSdk,
+        initializeSdk,
+        disconnectWallet,
       }}
     >
       {children}

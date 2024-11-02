@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
@@ -21,8 +22,9 @@ export default function CirclesOnboarding() {
     adapter,
     circlesProvider,
     circlesAddress,
-    initSdk,
+    initializeSdk,
   } = useContext(CirclesSDKContext);
+
   const [avatarInfo, setAvatar] = useState(null);
   const [userBalance, setUserBalance] = useState(0);
   const [mintableAmount, setMintableAmount] = useState(0);
@@ -37,7 +39,7 @@ export default function CirclesOnboarding() {
   // Connect Wallet Function
   const connectWallet = async () => {
     try {
-      await initSdk();
+      await initializeSdk();
       await fetchUserBalance();
       setIsConnected(true);
 
@@ -48,11 +50,16 @@ export default function CirclesOnboarding() {
   };
 
   useEffect(() => {
-    if (isConnected && sdk && circlesAddress) {
-      handleAvatarCheck(); // Check avatar when connection status, SDK, or address changes
-      fetchUserBalance(); // Fetch the user balance when connected
-    }
+    const handleInitialization = async () => {
+      if (isConnected && sdk && circlesAddress) {
+        await handleAvatarCheck(); // Check avatar when connection status, SDK, or address changes
+        await fetchUserBalance(); // Fetch the user balance when connected
+      }
+    };
+
+    handleInitialization();
   }, [isConnected, sdk, circlesAddress]);
+
 
   const disconnectWallet = () => {
     setIsConnected(false);
