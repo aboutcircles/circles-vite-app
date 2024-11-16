@@ -13,7 +13,7 @@ const PersonalMintComponent = ({ avatarInfo, circlesAddress, handleregi }) => {
       await avatarInfo.personalMint();
 
       // Update total balance after minting
-      totalBalance = await avatarInfo.getMintableamount(circlesAddress);
+      const Balance = await avatarInfo.getMintableamount(circlesAddress);
       setTotalBalance(totalBalance);
 
       return { success: true, message: "Personal minting successful" };
