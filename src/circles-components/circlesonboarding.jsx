@@ -1,19 +1,22 @@
+
+
+
 'use client'
 
-import React, { useState, useEffect, useContext } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import CirclesSDKContext from "../contexts/CirclesSDK"
-import { AvatarRegistration } from './avatarRegisteration'
-import { InvitePeoplePopup } from './inviteHumanV2'
-import ManageTrustAndUntrust from "./ManageTrustUntrust"
-import SendCircles from "./transferCircles"
-import PersonalMintComponent from "./personalMint"
-import RecipientValidator from "./recipientValidator"
-import TrustRelations from "./trustRelations"
-import { ethers } from "ethers"
+import React, { useState, useEffect, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import CirclesSDKContext from "../contexts/CirclesSDK";
+import { AvatarRegistration } from './avatarRegisteration';
+import { InvitePeoplePopup } from './inviteHumanV2';
+import ManageTrustAndUntrust from "./ManageTrustUntrust";
+import SendCircles from "./transferCircles";
+import PersonalMintComponent from "./personalMint";
+import RecipientValidator from "./recipientValidator";
+import TrustRelations from "./trustRelations";
+import { ethers } from "ethers";
 
 export default function CirclesOnboarding() {
   const {
@@ -24,124 +27,126 @@ export default function CirclesOnboarding() {
     circlesProvider,
     circlesAddress,
     initializeSdk,
-  } = useContext(CirclesSDKContext)
+  } = useContext(CirclesSDKContext);
 
-  const [avatarInfo, setAvatar] = useState(null)
-  const [userBalance, setUserBalance] = useState(0)
-  const [mintableAmount, setMintableAmount] = useState(0)
-  const [totalBalance, setTotalBalance] = useState(0)
-  const [recipient, setRecipient] = useState("")
-  const [recipientIsValid, setRecipientIsValid] = useState(false)
-  const [trustedCircles, setTrustedCircles] = useState([])
-  const [untrustedCircles, setUntrustedCircles] = useState([])
-  const [mappedRelations, setTrustRelations] = useState([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [isInvitePopupOpen, setIsInvitePopupOpen] = useState(false)
-  const navigate = useNavigate()
+  const [avatarInfo, setAvatar] = useState(null);
+  const [userBalance, setUserBalance] = useState(0);
+  const [mintableAmount, setMintableAmount] = useState(0);
+  const [totalBalance, setTotalBalance] = useState(0);
+  const [recipient, setRecipient] = useState("");
+  const [recipientIsValid, setRecipientIsValid] = useState(false);
+  const [trustedCircles, setTrustedCircles] = useState([]);
+  const [untrustedCircles, setUntrustedCircles] = useState([]);
+  const [mappedRelations, setTrustRelations] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isInvitePopupOpen, setIsInvitePopupOpen] = useState(false);
+  const navigate = useNavigate();
 
   const connectWallet = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      await initializeSdk()
-      await fetchUserBalance()
-      setIsConnected(true)
-      await handleAvatarCheck()
+      await initializeSdk();
+      setIsConnected(true);
+      await handleInitialization();
     } catch (error) {
-      console.error("Error connecting wallet:", error)
+      console.error("Error connecting wallet:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
-  useEffect(() => {
-    const handleInitialization = async () => {
-      if (isConnected && sdk && circlesAddress) {
-        await handleAvatarCheck()
-        await fetchUserBalance()
+  const handleInitialization = async () => {
+    if (sdk && circlesAddress) {
+      try {
+        await fetchUserBalance();
+        await handleAvatarCheck();
+      } catch (error) {
+        console.error("Error during initialization:", error);
       }
     }
+  };
 
-    handleInitialization()
-  }, [isConnected, sdk, circlesAddress])
+  useEffect(() => {
+    if (isConnected) {
+      handleInitialization();
+    }
+  }, [isConnected, sdk, circlesAddress]);
 
   const disconnectWallet = () => {
-    setIsConnected(false)
-    setUserBalance(0)
-    setAvatar(null)
-  }
+    setIsConnected(false);
+    setUserBalance(0);
+    setAvatar(null);
+    setMintableAmount(0);
+    setTotalBalance(0);
+  };
 
   const fetchUserBalance = async () => {
     if (circlesAddress && circlesProvider) {
       try {
-        const userBalance = await circlesProvider.getBalance(circlesAddress)
-        setUserBalance(ethers.formatEther(userBalance))
+        const balance = await circlesProvider.getBalance(circlesAddress);
+        setUserBalance(ethers.formatEther(balance));
       } catch (error) {
-        console.error("Error fetching user balance:", error)
+        console.error("Error fetching user balance:", error);
       }
     }
-  }
+  };
 
   const handleAvatarCheck = async () => {
     try {
-      if (!sdk) {
-        throw new Error("SDK is not available")
-      }
+      if (!sdk || !circlesAddress) return;
 
-      if (!circlesAddress) {
-        throw new Error("Circles address is not available")
-      }
-
-      const avatar = await sdk.getAvatar(circlesAddress)
-      console.log("Avatar check result:", avatar)
-
+      const avatar = await sdk.getAvatar(circlesAddress);
       if (avatar) {
-        setAvatar(avatar)
-        const mintableAmount = await avatar.getMintableAmount(circlesAddress)
-        setMintableAmount(mintableAmount)
-        await updateBalance()
+        setAvatar(avatar);
+        await updateBalance(avatar);
       } else {
-        console.log("Avatar not found")
-        setAvatar(null)
+        setAvatar(null);
       }
     } catch (error) {
-      console.error("Error in handleAvatarCheck:", error)
+      console.error("Error checking avatar:", error);
     }
-  }
+  };
+
+  const updateBalance = async (avatar = avatarInfo) => {
+    if (!avatar || !circlesAddress) return;
+
+    try {
+      const total = await avatar.getTotalBalance(circlesAddress);
+      const mintable = await avatar.getMintableAmount(circlesAddress);
+
+      setTotalBalance(total);
+      setMintableAmount(mintable);
+      await fetchUserBalance();
+    } catch (error) {
+      console.error("Error updating balance:", error);
+    }
+  };
 
   const handleRegisterAvatar = async (inviterAddress, name) => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      const newAvatar = await sdk.acceptInvitation(inviterAddress, { name })
-      console.log("Registered as V2 Human:", newAvatar)
-      setAvatar(newAvatar)
-      await updateBalance()
-    } catch (registerError) {
-      console.error("Error registering avatar:", registerError)
+      const newAvatar = await sdk.acceptInvitation(inviterAddress, { name });
+      setAvatar(newAvatar);
+      await updateBalance(newAvatar);
+    } catch (error) {
+      console.error("Error registering avatar:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleNavigateToDashboard = () => {
-    navigate("/dashboard", { state: { trustRelations: mappedRelations } })
-  }
-
-  const updateBalance = async () => {
-    if (avatarInfo && circlesAddress) {
-      const totalBalance = await avatarInfo.getTotalBalance(circlesAddress)
-      setTotalBalance(totalBalance)
-    }
-  }
+    navigate("/dashboard", { state: { trustRelations: mappedRelations } });
+  };
 
   const handleInvitePeople = async (inviteeAddress) => {
     try {
-      await avatarInfo.inviteHuman(inviteeAddress)
-      console.log(`Invitation sent to ${address}`)
+      await avatarInfo.inviteHuman(inviteeAddress);
+      console.log(`Invitation sent to ${inviteeAddress}`);
     } catch (error) {
-      console.error("Error inviting user:", error)
-      throw error
+      console.error("Error inviting user:", error);
     }
-  }
+  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
@@ -206,9 +211,15 @@ export default function CirclesOnboarding() {
                           Address: {avatarInfo.address}
                         </Label>
                         <Label className="block text-sm font-medium">
-                          Total Balance: {totalBalance}
+                          Total Balance: {Number(totalBalance).toFixed()}
                         </Label>
-                        <PersonalMintComponent />
+                        <Label className="block text-sm font-medium">
+                          Mintable Amount: {Number(mintableAmount).toFixed(4)} CRC
+                        </Label>
+                        <PersonalMintComponent 
+                          avatarInfo={avatarInfo} 
+                          updateBalance={updateBalance} 
+                        />
                       </div>
                     </div>
                   </div>
@@ -259,7 +270,7 @@ export default function CirclesOnboarding() {
         onInvite={handleInvitePeople}
       />
     </div>
-  )
+  );
 }
 
 function UserIcon(props) {
@@ -279,5 +290,9 @@ function UserIcon(props) {
       <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
       <circle cx="12" cy="7" r="4" />
     </svg>
-  )
+  );
 }
+
+
+
+
