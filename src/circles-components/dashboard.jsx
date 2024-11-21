@@ -1,5 +1,3 @@
-// Dashboard.jsx
-
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ScrollArea } from "../components/ui/scroll-area";
@@ -20,37 +18,18 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (location.state && location.state.trustRelations) {
-      setTrustRelations(location.state.trustRelations);
+      const mappedRelations = location.state.trustRelations.map((rel) => ({
+        timestamp: rel.timestamp,
+        objectAvatar: rel.objectAvatar,
+        relation: rel.relation,
+      }));
+      setTrustRelations(mappedRelations);
     }
   }, [location.state]);
 
   const handleNavigateToMainPage = () => {
     navigate("/");
   };
-
-  //   const handleRemoveTrust = async (address) => {
-  //     try {
-  //       if (!avatarInfo) {
-  //         throw new Error("Avatar not found");
-  //       }
-  //       await avatarInfo.untrust(address);
-  //       setTrustRelations(trustRelations.filter((rel) => rel.objectAvatar !== address));
-  //     } catch (error) {
-  //       console.error("Error removing trust:", error);
-  //     }
-  //   };
-
-  //   const handleAddTrust = async (address) => {
-  //     try {
-  //       if (!avatarInfo) {
-  //         throw new Error("Avatar not found");
-  //       }
-  //       await avatarInfo.trust(address);
-  //       setTrustRelations([...trustRelations, { objectAvatar: address, relation: "trusts", timestamp: Math.floor(Date.now() / 1000) }]);
-  //     } catch (error) {
-  //       console.error("Error adding trust:", error);
-  //     }
-  //   };
 
   return (
     <div className="flex items-center justify-center w-screen h-screen bg-gray-100 dark:bg-gray-900">
@@ -76,40 +55,16 @@ const Dashboard = () => {
                       <TableHead>Date</TableHead>
                       <TableHead>Relation</TableHead>
                       <TableHead>Address</TableHead>
-                      {/* <TableHead>Add/Remove Trust</TableHead> */}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {trustRelations.map((row, index) => {
-                      const date = new Date(row.timestamp * 1000);
-                      const isIncoming = row.relation === "trustedBy";
-                      const isOutgoing = row.relation === "trusts";
-                      const isMutual = row.relation === "mutuallyTrusts";
-                      return (
-                        <TableRow key={index}>
-                          <TableCell>{date.toLocaleString()}</TableCell>
-                          <TableCell>
-                            {isMutual
-                              ? "Mutually Trusted"
-                              : isIncoming
-                              ? "Incoming Trust"
-                              : "Outgoing Trust"}
-                          </TableCell>
-                          <TableCell>{row.objectAvatar}</TableCell>
-                          {/* <TableCell>
-                            {isOutgoing || isMutual ? (
-                              <Button onClick={() => handleRemoveTrust(row.objectAvatar)}>
-                                Remove Trust
-                              </Button>
-                            ) : (
-                              <Button onClick={() => handleAddTrust(row.objectAvatar)}>
-                                Add Trust
-                              </Button>
-                            )}
-                          </TableCell> */}
-                        </TableRow>
-                      );
-                    })}
+                    {trustRelations.map((relation, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{new Date(relation.timestamp * 1000).toLocaleDateString()}</TableCell>
+                        <TableCell>{relation.relation}</TableCell>
+                        <TableCell>{relation.objectAvatar}</TableCell>
+                      </TableRow>
+                    ))}
                   </TableBody>
                 </Table>
               </ScrollArea>
