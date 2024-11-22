@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Dashboard from "./dashboard";
-import CirclesOnboarding from "./circlesOnboarding";
-import { CirclesSDK } from "../contexts/CirclesSDK";
+import Dashboard from "./circles-components/dashboard";
+import CirclesOnboarding from "./circles-components/circlesonboarding";
+import { CirclesSDK } from "./contexts/CirclesSDK";
 
 export default function App() {
   const [trustRelations, setTrustRelations] = useState([]);

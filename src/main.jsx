@@ -1,6 +1,6 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import App from './circles-components/App.jsx';
+import App from './App';
 import './index.css';
 
 // Use ReactDOM.createRoot to render your app
