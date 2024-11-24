@@ -11,17 +11,29 @@ const TrustRelations = ({
         const trustRelations = await avatarInfo.getTrustRelations("");
         console.log("Trust Relations:", trustRelations);
 
-        const trustedCircles = trustRelations.map((rel) => rel.objectAvatar);
+        // Map relations for trustedCircles and differentiate by type
+        const trustedCircles = trustRelations
+          .filter((rel) => rel.relation === "trusts")
+          .map((rel) => rel.objectAvatar);
+
         const mappedRelations = trustRelations.map((rel) => ({
           timestamp: rel.timestamp,
           objectAvatar: rel.objectAvatar,
-          relations: rel.relation,
+          relation:
+            rel.relation === "trustedBy"
+              ? "Incoming Trust"
+              : rel.relation === "trusts"
+              ? "Outgoing Trust"
+              : rel.relation === "mutuallyTrusts"
+              ? "Mutually Trusted"
+              : "Unknown Relation",
         }));
 
+        // Set state
         setTrustedCircles(trustedCircles);
         setTrustRelations(mappedRelations);
 
-        console.log(mappedRelations, "got mapped data");
+        console.log(mappedRelations, "Mapped Data");
       } catch (error) {
         console.error("Error processing trust relations:", error);
       }
