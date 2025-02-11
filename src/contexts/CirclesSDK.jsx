@@ -43,7 +43,7 @@ export const CirclesSDK = ({ children }) => {
       console.log("SDK initialized:", sdkInstance);
 
       const circlesRpc = new CirclesRpc(
-        'https://rpc.aboutcircles.com/'
+        'https://static.94.138.251.148.clients.your-server.de/rpc/'
       );
       const data = new CirclesData(circlesRpc);
       setCirclesData(data);
